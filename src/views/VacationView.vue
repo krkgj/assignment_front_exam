@@ -10,72 +10,16 @@
     <v-row no-gutters align="center">
       <requesting-vacation></requesting-vacation>
     </v-row>
-    <v-row no-gutters align="center">
-      <v-col cols="3">
-        <v-menu
-          v-model="menuSDate"
-          :close-on-content-click="false"
-          :nudge-right="40"
-          transition="scale-transition"
-          offset-y
-          min-width="auto"
-        >
-          <template v-slot:activator="{ on, attrs }">
-            <v-text-field
-              v-model="startDate"
-              label="휴가 시작날짜"
-              prepend-icon="mdi-calendar"
-              readonly
-              v-bind="attrs"
-              v-on="on"
-            ></v-text-field>
-          </template>
-          <v-date-picker
-            locale="ko-kr"
-            v-model="startDate"
-            @input="menuSDate = false"
-          ></v-date-picker>
-        </v-menu>
-      </v-col>
-      <v-col cols="2" class="text-center">~</v-col>
-      <v-col cols="3">
-        <v-menu
-          v-model="menuEDate"
-          :close-on-content-click="false"
-          :nudge-right="40"
-          transition="scale-transition"
-          offset-y
-          min-width="auto"
-        >
-          <template v-slot:activator="{ on, attrs }">
-            <v-text-field
-              v-model="endDate"
-              label="휴가 종료날짜"
-              prepend-icon="mdi-calendar"
-              readonly
-              v-bind="attrs"
-              v-on="on"
-            ></v-text-field>
-          </template>
-          <v-date-picker
-            locale="ko-kr"
-            v-model="endDate"
-            @input="menuEDate = false"
-          ></v-date-picker>
-        </v-menu>
-      </v-col>
-    </v-row>
+
     <v-row no-gutters>
       <v-col cols="12">
         <v-data-table
-          class="ove"
           v-model="selected"
           height="600px"
           :headers="headers"
           :items="vacationList"
           item-key="seqUser"
           calculate-widths
-          show-select
           no-data-text="조회된 데이터가 없습니다."
           :footer-props="{
             'items-per-page-text': '페이지 당 데이터 개수',
@@ -96,21 +40,18 @@
 <script>
 import axios from "@/api/index";
 import VueCookies from "vue-cookies";
-import RequestingVacation from "@/components/RequestingVacation";
+import RequestingVacation from "@/components/vacation/RequestingVacation";
 export default {
   data() {
     return {
       userInfo: {},
       vacationType: "",
       remainingVacation: 0,
-      menuSDate: false,
-      menuEDate: false,
-      startDate: "",
-      endDate: "",
+
       selected: [],
       vacationList: [],
       headers: [
-        { text: "휴가 ID", value: "seq" },
+        { text: "휴가 신청 ID", value: "seq" },
         { text: "휴가 요청 시간", value: "requestTime" },
         { text: "휴가 시작일", value: "startDate" },
         { text: "휴가 시작일", value: "endDate" },

@@ -114,6 +114,7 @@ export default {
         }
       );
       this.isLoading = false;
+
       VueCookies.set("accessToken", result.data.accessToken);
       VueCookies.set("userName", result.data.userName);
 
