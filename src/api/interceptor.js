@@ -24,10 +24,6 @@ function setInterceptors(instance) {
   // Add a response interceptor
   instance.interceptors.response.use(
     async function (response) {
-      console.log("========================response========================");
-      console.log(response);
-      console.log("================================================");
-
       return response;
     },
     function (error) {

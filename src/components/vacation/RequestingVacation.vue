@@ -6,11 +6,6 @@
     transition="dialog-bottom-transition"
   >
     <common-loading-modal :is-loading="isLoading" />
-    <common-snack-bar
-      :discriminant="snackDiscriminant"
-      :text="snackText"
-      :color="snackColor"
-    />
     <template v-slot:activator="{ on, attrs }">
       <v-btn class="mx-auto" depressed v-bind="attrs" v-on="on">
         <v-icon class="mr-2">mdi-car</v-icon> 우리 여행가요!
@@ -99,33 +94,39 @@
             ></v-date-picker>
           </v-menu>
         </v-col>
-        <v-col cols="2" class="text-center">~</v-col>
-        <v-col cols="auto">
-          <v-menu
-            v-model="menuEDate"
-            :close-on-content-click="false"
-            :nudge-right="40"
-            transition="scale-transition"
-            offset-y
-            min-width="auto"
+        <transition name="fade">
+          <v-col cols="2" class="text-center" v-show="vacationType === 'DAYOFF'"
+            >~</v-col
           >
-            <template v-slot:activator="{ on, attrs }">
-              <v-text-field
+        </transition>
+        <transition name="fade">
+          <v-col cols="auto" v-show="vacationType === 'DAYOFF'">
+            <v-menu
+              v-model="menuEDate"
+              :close-on-content-click="false"
+              :nudge-right="40"
+              transition="scale-transition"
+              offset-y
+              min-width="auto"
+            >
+              <template v-slot:activator="{ on, attrs }">
+                <v-text-field
+                  v-model="endDate"
+                  label="휴가 종료날짜"
+                  prepend-icon="mdi-calendar"
+                  readonly
+                  v-bind="attrs"
+                  v-on="on"
+                ></v-text-field>
+              </template>
+              <v-date-picker
+                locale="ko-kr"
                 v-model="endDate"
-                label="휴가 종료날짜"
-                prepend-icon="mdi-calendar"
-                readonly
-                v-bind="attrs"
-                v-on="on"
-              ></v-text-field>
-            </template>
-            <v-date-picker
-              locale="ko-kr"
-              v-model="endDate"
-              @input="menuEDate = false"
-            ></v-date-picker>
-          </v-menu>
-        </v-col>
+                @input="menuEDate = false"
+              ></v-date-picker>
+            </v-menu>
+          </v-col>
+        </transition>
       </v-row>
       <v-row no-gutters>
         <v-col cols="12"><v-divider></v-divider></v-col>
@@ -159,7 +160,6 @@
 <script>
 import axios from "@/api/index";
 import CommonLoadingModal from "@/components/common/CommonLoadingModal.vue";
-import CommonSnackBar from "@/components/common/CommonSnackBar.vue";
 // import VueCookies from "vue-cookies";
 export default {
   data() {
@@ -173,12 +173,9 @@ export default {
       endDate: "",
       comment: "",
       isLoading: false,
-      snackDiscriminant: false,
-      snackText: "",
-      snackColor: "#424242",
     };
   },
-  components: { CommonLoadingModal, CommonSnackBar },
+  components: { CommonLoadingModal },
   methods: {
     async registVacation() {
       let vacationData = {
@@ -188,24 +185,55 @@ export default {
         comment: this.comment,
       };
 
-      let result = await axios
-        .post("/vacation", vacationData)
-        .then(() => {
-          this.isLoading = false;
-          this.snackColor = "#424242";
-          this.snackDiscriminant = !this.snackDiscriminant;
-          this.snackText = "휴가 등록이 완료되었습니다";
-        })
-        .catch(() => {
-          this.isLoading = false;
-          this.snackColor = "#B71C1C";
-          this.snackDiscriminant = !this.snackDiscriminant;
-          this.snackText =
-            "휴가 등록이 실패하였습니다. 관리자에게 문의해주세요.";
-        });
+      let result = await axios.post("/vacation", vacationData).catch(() => {
+        this.isLoading = false;
+        this.snackColor = "#B71C1C";
+        this.snackDiscriminant = !this.snackDiscriminant;
+        this.snackText = "휴가 등록이 실패하였습니다. 관리자에게 문의해주세요.";
+      });
 
-      console.log(result);
+      let resultCode = result.data.code;
+      let text;
+      if (resultCode === "1401") {
+        this.isLoading = false;
+        text = "남은 휴가가 존재하지 않습니다..";
+        this.$emit("toggleSnackBar", text);
+      } else if (resultCode === "1402") {
+        this.isLoading = false;
+        text = "휴가 시작 날짜가 이미 지났습니다.";
+        this.$emit("toggleSnackBar", text);
+      } else if (resultCode === "1403") {
+        this.isLoading = false;
+        text = "휴가 신청 날짜가 이미 신청된 날짜입니다.";
+        this.$emit("toggleSnackBar", text);
+      } else if (resultCode === "1404") {
+        this.isLoading = false;
+        text = "휴가 신청일이 남은 휴가보다 많습니다.";
+        this.$emit("toggleSnackBar", text);
+      } else {
+        this.isLoading = false;
+        text = "휴가 등록이 완료되었습니다";
+        this.$emit("toggleSnackBar", text);
+
+        let vacations = await axios.get("/vacation");
+
+        this.$emit("remainingVacations", result.data.result);
+        this.$emit("refreshVacationsList", vacations.data.result);
+
+        this.dialog = false;
+      }
     },
   },
 };
 </script>
+
+<style>
+.fade-enter-active {
+  transition: opacity 0.5s;
+}
+
+.fade-enter,
+.fade-leave-to {
+  opacity: 0;
+}
+</style>
