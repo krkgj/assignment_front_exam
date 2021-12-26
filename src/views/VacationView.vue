@@ -183,7 +183,8 @@ export default {
     let vacations = await axios.get("/vacation");
     let userInfo = await axios.get("/user");
     let vacationLists = vacations.data.result;
-
+    console.log(vacations);
+    console.log(userInfo);
     this.vacationList = vacationLists;
     this.userInfo = userInfo.data.result;
   },
