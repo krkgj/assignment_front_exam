@@ -185,12 +185,16 @@ export default {
         comment: this.comment,
       };
 
-      let result = await axios.post("/vacation", vacationData).catch(() => {
-        this.isLoading = false;
-        this.snackColor = "#B71C1C";
-        this.snackDiscriminant = !this.snackDiscriminant;
-        this.snackText = "휴가 등록이 실패하였습니다. 관리자에게 문의해주세요.";
-      });
+      let result = await axios
+        .post("/vacation/vacation", vacationData)
+        .catch(() => {
+          console.log(vacationData);
+          this.isLoading = false;
+          this.snackColor = "#B71C1C";
+          this.snackDiscriminant = !this.snackDiscriminant;
+          this.snackText =
+            "휴가 등록이 실패하였습니다. 관리자에게 문의해주세요.";
+        });
 
       let resultCode = result.data.code;
       let text;
@@ -215,7 +219,7 @@ export default {
         text = "휴가 등록이 완료되었습니다";
         this.$emit("toggleSnackBar", text);
 
-        let vacations = await axios.get("/vacation");
+        let vacations = await axios.get("/vacation/vacation");
 
         this.$emit("remainingVacations", result.data.result);
         this.$emit("refreshVacationsList", vacations.data.result);

@@ -158,15 +158,18 @@ export default {
     },
     async realDeleteTT() {
       let requestData = this.deleteItem;
-      let result = await axios.delete("/vacation/" + requestData.seq);
-      let vacations = await axios.get("/vacation");
-      this.vacationList = vacations.data.result;
-
+      let result = await axios.delete("/vacation/vacation/" + requestData.seq);
+      let vacations = await axios.get("/vacation/vacation");
+      let user = await axios.get("/user");
       let resultCode = result.data.code;
       if (resultCode === "200") {
         this.toggleSnackBars("휴가가 취소되었어요😭😭");
+        this.userInfo = user.data.result;
+        this.vacationList = vacations.data.result;
       } else {
         this.toggleSnackBars("이미 시작하신 휴가가 아닐까요? 🤔");
+        this.userInfo = user.data.result;
+        this.vacationList = vacations.data.result;
       }
     },
     noDelete() {
@@ -180,11 +183,9 @@ export default {
     this.userName = VueCookies.get("userName");
   },
   async created() {
-    let vacations = await axios.get("/vacation");
+    let vacations = await axios.get("/vacation/vacation");
     let userInfo = await axios.get("/user");
     let vacationLists = vacations.data.result;
-    console.log(vacations);
-    console.log(userInfo);
     this.vacationList = vacationLists;
     this.userInfo = userInfo.data.result;
   },

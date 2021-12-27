@@ -105,13 +105,14 @@ export default {
         id: this.id,
         password: this.password,
       };
-      let result = await axios.post("/jwt/token", loginData, {
+      let result = await axios.post("/login/token", loginData, {
         // headers: { "Content-Type": `application/json` },
         // withCredentials: true,
       });
       this.isLoading = false;
 
       VueCookies.set("accessToken", result.data.accessToken);
+      // VueCookies.set("refreshToken", result.data.refreshToken);
       VueCookies.set("userName", result.data.userName);
 
       if (result.data.code === "200") this.$router.push({ path: "/vacation" });
